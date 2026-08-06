@@ -133,6 +133,20 @@ document.querySelectorAll('.reveal').forEach((el, i) => {
   io.observe(el);
 });
 
+/* ─────────── CTA fixo no mobile ───────────
+   Sobe assim que o hero sai da tela. Antes disso ficaria em cima do botão
+   principal, competindo com ele em vez de somar. */
+const dock = document.getElementById('dock');
+const heroEl = document.querySelector('.hero');
+
+if (dock && heroEl) {
+  const dockIO = new IntersectionObserver(([entry]) => {
+    dock.classList.toggle('is-up', !entry.isIntersecting);
+  }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+
+  dockIO.observe(heroEl);
+}
+
 /* ─────────── Eventos do Pixel ─────────── */
 document.querySelectorAll('[data-track]').forEach((el) => {
   el.addEventListener('click', () => {

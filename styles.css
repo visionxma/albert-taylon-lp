@@ -43,6 +43,21 @@ body {
 
 img { max-width: 100%; display: block; }
 
+/* ─────────── TEXTURA ───────────
+   Grão de filme sobre a página inteira. É o que tira o aspecto de gradiente
+   digital chapado: superfície escura lisa é a assinatura visual de template
+   gerado. Fica acima de tudo, mas sem capturar clique. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: .05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 .wrap {
   width: min(100% - 2.5rem, var(--wrap));
   margin-inline: auto;
@@ -328,7 +343,11 @@ img { max-width: 100%; display: block; }
 .section {
   position: relative;
   isolation: isolate;
+  /* clip, não hidden: hidden cria contexto de rolagem e mata o position:
+     sticky dos filhos (a foto da história e o empilhamento dos cards).
+     A primeira linha é fallback para navegadores sem suporte a clip. */
   overflow: hidden;
+  overflow: clip;
   padding: clamp(3rem, 6vw, 4.75rem) 0;
 }
 .section--alt { background: var(--navy-900); }
@@ -395,7 +414,10 @@ img { max-width: 100%; display: block; }
   mask-image: linear-gradient(to top, #000, transparent 70%);
 }
 
-.section__head { text-align: center; margin-bottom: 2.25rem; }
+/* alinhado à esquerda, não centralizado: bloco centralizado com subtítulo
+   simétrico é a diagramação padrão de template, e é o que mais entrega
+   "página gerada" antes mesmo de alguém ler o texto */
+.section__head { margin-bottom: 2.25rem; max-width: 34ch; }
 
 .eyebrow {
   display: block;
@@ -420,8 +442,18 @@ img { max-width: 100%; display: block; }
 
 .section__sub {
   max-width: 56ch;
-  margin: 1rem auto 0;
+  margin: 1rem 0 0;
   color: var(--ice-dim);
+}
+
+/* traço dourado curto acima do olho, no lugar de tudo centralizado */
+.section__head .eyebrow { display: flex; align-items: center; gap: .6rem; }
+.section__head .eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  background: var(--grad-gold);
+  box-shadow: 0 0 8px rgba(217, 162, 39, .6);
 }
 
 /* ─────────── HISTÓRIA ─────────── */
@@ -537,6 +569,26 @@ img { max-width: 100%; display: block; }
   transition: transform .25s ease, border-color .25s ease;
 }
 
+/* vidro: deixa os candlesticks do fundo aparecerem por baixo do card */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .card {
+    background: linear-gradient(160deg, rgba(22, 50, 75, .58), rgba(10, 24, 38, .66));
+    border-color: rgba(255, 255, 255, .09);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+  }
+}
+
+/* quina iluminada, como borda de placa de vidro */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(150deg, rgba(255, 255, 255, .07), transparent 42%);
+}
+
 .card::before {
   content: '';
   position: absolute;
@@ -583,6 +635,15 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--line);
   border-radius: var(--r);
   background: var(--navy-900);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .fit__col {
+    background: linear-gradient(160deg, rgba(22, 50, 75, .5), rgba(10, 24, 38, .6));
+    border-color: rgba(255, 255, 255, .09);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+  }
 }
 
 .fit__col--no { background: rgba(15, 36, 56, .35); border-color: rgba(255, 255, 255, .07); }
@@ -711,6 +772,43 @@ img { max-width: 100%; display: block; }
 
 .footer__copy { font-size: .78rem; color: var(--ice-dim); opacity: .6; margin: 0; }
 
+/* ─────────── CTA FIXO (MOBILE) ───────────
+   Só aparece depois que o hero sai da tela, para não competir com o botão
+   principal. É a mudança de maior efeito real em conversão no mobile:
+   remove a necessidade de rolar de volta para agir. */
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom));
+  background: rgba(8, 20, 33, .92);
+  border-top: 1px solid rgba(217, 162, 39, .22);
+  transform: translateY(120%);
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .dock {
+    background: rgba(8, 20, 33, .68);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+  }
+}
+
+.dock.is-up { transform: none; }
+
+.dock__btn { width: 100%; justify-content: center; }
+
+.dock__micro { font-size: .7rem; color: var(--ice-dim); opacity: .75; }
+
+@media (max-width: 760px) { .dock { display: flex; } }
+
 /* ─────────── REVEAL ───────────
    Só esconde quando o JS confirma que consegue animar (.js-anim no <html>).
    Sem JS — ou com a aba em segundo plano, onde o Chrome congela transições —
@@ -746,10 +844,57 @@ img { max-width: 100%; display: block; }
   .beats { padding-left: 2.25rem; }
 }
 
+/* ─────────── EMPILHAMENTO DOS CARDS ───────────
+   Em coluna única cada card gruda no topo e o seguinte desliza por cima,
+   como um baralho sendo fechado. Só funciona porque a seção usa
+   overflow: clip; com hidden o sticky morreria. */
+@media (max-width: 620px) {
+  .cards { gap: .9rem; }
+
+  .card { position: sticky; }
+  .card:nth-child(1) { top: 4.2rem; }
+  .card:nth-child(2) { top: 5.3rem; }
+  .card:nth-child(3) { top: 6.4rem; }
+
+  /* o card de baixo encolhe e apaga conforme o próximo cobre.
+     Scroll-driven animation: onde não houver suporte, o empilhamento
+     continua funcionando, só sem o encolhimento. */
+  @supports (animation-timeline: view()) {
+    .card {
+      animation: cardStack linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+    .card:last-child { animation: none; }
+  }
+}
+
+@keyframes cardStack {
+  to { transform: scale(.93) translateY(-6px); opacity: .5; }
+}
+
 @media (max-width: 560px) {
   .btn { width: 100%; justify-content: center; }
-  .stats { grid-template-columns: 1fr; gap: 1.1rem; text-align: center; }
-  .stats li { align-items: center; }
+  /* empilhado, mas com número e rótulo travados em duas colunas, para os
+     três valores caírem no mesmo eixo vertical em vez de cada bloco
+     centralizar sozinho */
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 0;
+    text-align: left;
+  }
+
+  .stats li {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    align-items: baseline;
+    column-gap: .8rem;
+    padding: .7rem 0;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+  }
+
+  .stats li:first-child { border-top: 0; padding-top: 0; }
+  .stats strong { font-size: 1.35rem; }
   .story__quote { font-size: .96rem; }
 }
 
