@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# editores
+.vscode/
+.idea/
+
+# dependências / build (caso a LP cresça)
+node_modules/
+dist/
+
+# segredos — token da Conversions API nunca vai pro repo
+.env
+.env.*
+!.env.example
+
+# originais soltos na raiz: cópias byte a byte do que está em assets/
+/IMG_7283.jpg
+/WhatsApp Image *.jpeg
